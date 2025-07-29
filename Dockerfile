@@ -6,7 +6,7 @@ WORKDIR /
 RUN pip install --no-cache-dir runpod
 
 # Copy your handler file
-COPY rp_handler.py /
+COPY handler.py /
 
 # Start the container
 CMD ["python3", "-u", "handler.py"]
