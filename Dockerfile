@@ -1,12 +1,17 @@
-FROM python:3.10-slim
+# ──────────────────────────────────────────────────────────────────────────────
+# Minimal Dockerfile for a RunPod Serverless worker
+# Base image: PyTorch 2.1, Python 3.10, CUDA 11.8, Ubuntu 22.04
+# ──────────────────────────────────────────────────────────────────────────────
+FROM runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04
 
-WORKDIR /
+# Use a non‑root workspace directory
+WORKDIR /app
 
-# Install dependencies
-RUN pip install --no-cache-dir runpod
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy your handler file
-COPY handler.py /
+# Copy your worker code into the image
+COPY handler.py .
+COPY sample.jsonl .
 
-# Start the container
-CMD ["python3", "-u", "handler.py"]
+CMD ["python", "handler.py"]

@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  runpod-handler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - RUNPOD_ENDPOINT_ID=${RUNPOD_ENDPOINT_ID:-}
+      - RUNPOD_API_KEY=${RUNPOD_API_KEY:-}
+    env_file:
+      - .env
+    volumes:
+      # Mount current directory for development (optional - comment out for production)
+      - .:/app
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
