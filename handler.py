@@ -1,5 +1,7 @@
 import os, tempfile, requests, json, runpod, shutil
 from dotenv import load_dotenv
+import torch, gc
+
 
 import boto3
 from transformers import (AutoModelForCausalLM, AutoTokenizer,
@@ -7,6 +9,13 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer,
 from peft import LoraConfig, get_peft_model, TaskType
 from datasets import load_dataset
 from huggingface_hub import login as hf_login
+
+
+def free_gpu():
+    """Release every scrap of GPU RAM the worker may still hold."""
+    gc.collect()              # 1. run Python garbage‑collector
+    torch.cuda.empty_cache()  # 2. tell PyTorch to return cached blocks
+    torch.cuda.ipc_collect()  # 3. clear inter‑process handles (safety)
 
 load_dotenv()
 s3 = boto3.client("s3")                     # needs AWS creds in env
@@ -108,6 +117,14 @@ def handler(event):
     # 9. push to S3 --------------------------------------------------------
     key_prefix = f"{prefix.rstrip('/')}/{adapter_nm}"
     upload_dir(out_dir, bucket, key_prefix)
+
+    if "model" in locals():
+        model.to("cpu")
+    for obj in ("model", "trainer", "dataset", "tokenized"):
+        if obj in locals():
+            del locals()[obj]
+
+    free_gpu()  
 
     return {
         "status": "ok",
