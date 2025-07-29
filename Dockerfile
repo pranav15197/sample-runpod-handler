@@ -1,14 +1,12 @@
 FROM python:3.10-slim
 
-# Set working directory
-WORKDIR /app
+WORKDIR /
 
-# Install required libraries
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies
+RUN pip install --no-cache-dir runpod
 
-# Copy your code
-COPY handler.py .
+# Copy your handler file
+COPY rp_handler.py /
 
-# Run the handler
-CMD ["python", "handler.py"]
+# Start the container
+CMD ["python3", "-u", "handler.py"]
